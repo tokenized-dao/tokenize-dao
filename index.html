@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tokenize DAO - Real World Assets Tokenization</title>
+    <link rel="icon" type="image/png" href="T.png">
     <style>
         * {
             margin: 0;
@@ -228,6 +229,9 @@
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             font-size: 2.5rem;
             font-weight: bold;
             background: linear-gradient(45deg, #d4af37, #ffd700, #ffed4e);
@@ -236,6 +240,18 @@
             background-clip: text;
             text-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
             font-family: 'Georgia', serif;
+        }
+
+        .logo img {
+            width: 50px;
+            height: 50px;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover img {
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8));
+            transform: scale(1.1);
         }
 
         .social-links {
@@ -671,7 +687,10 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo">Tokenize DAO</div>
+                <div class="logo">
+                    <img src="T.png" alt="Tokenize DAO Logo">
+                    <span>Tokenize DAO</span>
+                </div>
                 <div class="social-links">
                     <a href="https://t.me/TokenizeDAO" class="social-btn" target="_blank">
                         <img src="telegram.svg" alt="Telegram" style="width: 48px; height: 48px;">
