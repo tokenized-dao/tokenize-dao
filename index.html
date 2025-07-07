@@ -382,6 +382,76 @@
             background: linear-gradient(45deg, #ffd700, #ffed4e);
         }
 
+        .pancakeswap-section {
+            padding: 60px 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .pancakeswap-container {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(255, 215, 0, 0.1));
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            border-radius: 25px;
+            padding: 40px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pancakeswap-container::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            animation: shimmerPancake 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmerPancake {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .pancakeswap-link {
+            display: inline-block;
+            padding: 20px 60px;
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.3), rgba(255, 215, 0, 0.3));
+            border: 2px solid rgba(212, 175, 55, 0.5);
+            border-radius: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .pancakeswap-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.4);
+            border-color: #ffd700;
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.5), rgba(255, 215, 0, 0.5));
+        }
+
+        .pancakeswap-link img {
+            width: 200px;
+            height: auto;
+            filter: brightness(1.2) saturate(1.1);
+            transition: all 0.3s ease;
+        }
+
+        .pancakeswap-link:hover img {
+            filter: brightness(1.4) saturate(1.3);
+            transform: scale(1.05);
+        }
+
         .dextools-section {
             padding: 60px 0;
             background: rgba(0, 0, 0, 0.8);
@@ -711,6 +781,17 @@
         </div>
     </section>
 
+    <section class="pancakeswap-section">
+        <div class="container">
+            <h2 class="section-title">Trade Our Token</h2>
+            <div class="pancakeswap-container">
+                <a href="https://pancakeswap.finance/swap?inputCurrency=BNB&outputCurrency=0x951a60571DDF5313B696ba057561dFF9C69080D3" class="pancakeswap-link" target="_blank">
+                    <img src="pancake_swap_2.png" alt="PancakeSwap - Trade Tokenize DAO">
+                </a>
+            </div>
+        </div>
+    </section>
+
     <section class="blockchain-demo">
         <div class="container">
             <h2 class="section-title">Tokenization in Action</h2>
@@ -779,7 +860,7 @@
         <div class="container">
             <h2 class="section-title">Track Our Progress</h2>
             <div class="dextools-container">
-                <a href="#" class="dextools-link" target="_blank">
+                <a href="https://www.dextools.io/app/en/bnb/pair-explorer/0x91e5a9a631701e51e5984b05a45a6f893b43f8cc?t=1751896890049" class="dextools-link" target="_blank">
                     <img src="dextools_logo_full_dark.svg" alt="DexTools - Track Tokenize DAO">
                 </a>
             </div>
