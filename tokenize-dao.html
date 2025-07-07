@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenize DAO - Real World Assets Tokenization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .blockchain-demo {
+            padding: 80px 0;
+            background: rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .blockchain-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .blockchain-block {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(0, 0, 0, 0.8));
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.1);
+        }
+
+        .blockchain-block:hover {
+            transform: translateX(10px);
+            border-color: #ffd700;
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+        }
+
+        .blockchain-block::before {
+            content: "";
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, #d4af37, #ffd700);
+            transform: translateX(-50%);
+        }
+
+        .blockchain-block[data-block="1"]::before {
+            display: none;
+        }
+
+        .blockchain-block::after {
+            content: "🔗";
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .blockchain-block[data-block="1"]::after {
+            display: none;
+        }
+
+        .block-header {
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .block-header h3 {
+            color: #ffd700;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .block-content {
+            font-family: 'Courier New', monospace;
+        }
+
+        .hash {
+            color: #ff6b6b;
+            font-size: 0.75rem;
+            margin-bottom: 10px;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .timestamp {
+            color: #4ecdc4;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .nonce {
+            color: #4ecdc4;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .transaction {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #d4af37;
+            font-size: 0.9rem;
+        }
+
+        .asset {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            color: #ffd700;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .blockchain-container {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            
+            .blockchain-block {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+            
+            .hash {
+                font-size: 0.7rem;
+            }
+            
+            .transaction, .asset {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2d2d2d 100%);
+            color: #d4af37;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .diamond-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .diamond-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px),
+                linear-gradient(-45deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: -1;
+            animation: shimmer 15s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(30px, 30px) rotate(360deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #d4af37, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            font-family: 'Georgia', serif;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.2), rgba(255, 215, 0, 0.2));
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 8px;
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+        }
+
+        .social-btn:hover {
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.4), rgba(255, 215, 0, 0.4));
+            border-color: #ffd700;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+        }
+
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.1; }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #d4af37, #ffd700, #ffed4e, #b8860b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: goldGlow 3s ease-in-out infinite alternate;
+            font-family: 'Georgia', serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes goldGlow {
+            from { 
+                text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+            }
+            to { 
+                text-shadow: 0 0 40px rgba(212, 175, 55, 0.8);
+                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+            }
+        }
+
+        .hero p.tagline {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .hero p.disclaimer {
+            font-size: 1rem;
+            margin-bottom: 30px;
+            color: #ff6b9d;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 2;
+            font-weight: 300;
+            line-height: 1.4;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background: linear-gradient(45deg, #d4af37, #ffd700);
+            color: #000;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid #ffd700;
+            position: relative;
+            z-index: 2;
+            font-family: 'Georgia', serif;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6);
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+        }
+
+        .tokenomics {
+            padding: 60px 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(45deg, #d4af37, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+        }
+
+        .tokenomics-table {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(255, 215, 0, 0.1));
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            border-radius: 25px;
+            padding: 40px;
+            backdrop-filter: blur(15px);
+            overflow-x: auto;
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.3);
+        }
+
+        .total-supply {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.8rem;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.2), rgba(255, 215, 0, 0.2));
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        th, td {
+            padding: 20px 15px;
+            text-align: left;
+            border: none;
+            position: relative;
+        }
+
+        th {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), rgba(255, 215, 0, 0.3));
+            color: #ffd700;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            border-bottom: 2px solid rgba(212, 175, 55, 0.6);
+        }
+
+        tbody tr {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(212, 175, 55, 0.05));
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(255, 215, 0, 0.1));
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        td {
+            color: #c9b037;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .wallet-name {
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wallet-name::before {
+            content: "💎";
+            font-size: 1.2rem;
+        }
+
+        .percentage {
+            font-weight: bold;
+            color: #4ecdc4;
+            font-size: 1.1rem;
+            text-shadow: 0 0 5px rgba(78, 205, 196, 0.3);
+        }
+
+        .amount {
+            font-weight: bold;
+            color: #d4af37;
+            font-family: 'Courier New', monospace;
+        }
+
+        .address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #ff6b9d;
+            background: rgba(255, 107, 157, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 107, 157, 0.2);
+            transition: all 0.3s ease;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .address:hover {
+            background: rgba(255, 107, 157, 0.2);
+            color: #ff6b9d;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
+        }
+
+        .bscscan-link {
+            color: #ffd700;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 16px;
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.2), rgba(255, 215, 0, 0.2));
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            display: inline-block;
+        }
+
+        .bscscan-link:hover {
+            color: #ffed4e;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+            background: linear-gradient(45deg, rgba(212, 175, 55, 0.4), rgba(255, 215, 0, 0.4));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(255, 215, 0, 0.2)) !important;
+            font-weight: bold;
+            border-top: 3px solid rgba(212, 175, 55, 0.6);
+        }
+
+        .total-row td {
+            color: #ffd700;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            font-weight: bold;
+        }
+
+        .total-row:hover {
+            transform: none;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px 0;
+            text-align: center;
+            border-top: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .footer-content {
+            color: #c9b037;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        /* Diamond sparkle animation */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 2s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .social-links {
+                flex-wrap: wrap;
+            }
+            
+            .tokenomics-table {
+                padding: 20px;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="diamond-bg"></div>
+    <div class="diamond-pattern"></div>
+    
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Tokenize DAO</div>
+                <div class="social-links">
+                    <a href="https://t.me/TokenizeDAO" class="social-btn" target="_blank">
+                        <span>📱</span>
+                        Telegram
+                    </a>
+                    <a href="https://x.com/Tokenize_DAO" class="social-btn" target="_blank">
+                        <span>𝕏</span>
+                        Twitter
+                    </a>
+                    <a href="#" class="social-btn">
+                        <span>📊</span>
+                        DexTools
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Tokenize DAO</h1>
+            <p class="tagline">Tokenizing the world but in a sexy way</p>
+            <p class="disclaimer">blocks below are not real yet (or are they?) - enjoy the visual, you'll enjoy the real world (asset) version someday soon</p>
+        </div>
+    </section>
+
+    <section class="blockchain-demo">
+        <div class="container">
+            <h2 class="section-title">Tokenization in Action</h2>
+            <div class="blockchain-container">
+                <div class="blockchain-block" data-block="1">
+                    <div class="block-header">
+                        <h3>Tokenize DAO Block #1</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="hash">Hash: TOKENIZE1ABC7E2FDC19BE8732899C55FFBC1223A8BAB4EF729F4E054966E55ACBA52D17</div>
+                        <div class="timestamp">Created: 2:35:12 PM</div>
+                        <div class="nonce">Nonce: 458293</div>
+                        <div class="transaction">
+                            <span class="icon">🏢</span>
+                            <span class="label">Transfer:</span> 5,847.92 $TOKEN
+                        </div>
+                        <div class="asset">
+                            <span class="icon">🏢</span>
+                            <span class="label">Tokenized Asset:</span> Manhattan Office Building - 432 Park Avenue Commercial Complex 2024
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blockchain-block" data-block="2">
+                    <div class="block-header">
+                        <h3>Tokenize DAO Block #2</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="hash">Hash: TOKENIZE9BAC2EAFDC29BE9732899C55FFBC1223A8BAB4EF729F4E054966E55ACBA52D16</div>
+                        <div class="timestamp">Created: 2:41:43 PM</div>
+                        <div class="nonce">Nonce: 619345</div>
+                        <div class="transaction">
+                            <span class="icon">💸</span>
+                            <span class="label">Transfer:</span> 2,114.23 $TOKEN
+                        </div>
+                        <div class="asset">
+                            <span class="icon">🌬️</span>
+                            <span class="label">Tokenized Asset:</span> Wind Farm - Northshore Wind Energy Project 2024
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blockchain-block" data-block="3">
+                    <div class="block-header">
+                        <h3>Tokenize DAO Block #3</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="hash">Hash: TOKENIZE3DEF9CAFBC45AE7832199B88FFAC9876B9CAD7AF829E6F165877D77BCDA83E28</div>
+                        <div class="timestamp">Created: 2:47:19 PM</div>
+                        <div class="nonce">Nonce: 742681</div>
+                        <div class="transaction">
+                            <span class="icon">💡</span>
+                            <span class="label">Transfer:</span> 8,963.14 $TOKEN
+                        </div>
+                        <div class="asset">
+                            <span class="icon">💡</span>
+                            <span class="label">Tokenized Asset:</span> Intellectual Property - AI Patent Portfolio Tesla Autopilot Suite 2024
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tokenomics">
+        <div class="container">
+            <h2 class="section-title">Asset Distribution</h2>
+            <div class="tokenomics-table">
+                <div class="total-supply">
+                    <strong>Total Supply: 1,000,000,000 $TKND</strong>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Wallet</th>
+                            <th>Percentage</th>
+                            <th>Amount</th>
+                            <th>Address</th>
+                            <th>BSCScan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="wallet-name">DEV Wallet</td>
+                            <td class="percentage">5%</td>
+                            <td class="amount">50,000,000</td>
+                            <td class="address">0x9189E8c6374A8626A6986F8b65CEeAfFFe7E8E9B</td>
+                            <td><a href="https://bscscan.com/address/0x9189e8c6374a8626a6986f8b65ceeafffe7e8e9b" class="bscscan-link" target="_blank">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="wallet-name">TEAM Wallet</td>
+                            <td class="percentage">15%</td>
+                            <td class="amount">150,000,000</td>
+                            <td class="address">0x91f456c9727F055E50F9f1100d6A3447754Bc4BC</td>
+                            <td><a href="https://bscscan.com/address/0x91f456c9727F055E50F9f1100d6A3447754Bc4BC" class="bscscan-link" target="_blank">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="wallet-name">COMMUNITY Wallet</td>
+                            <td class="percentage">35%</td>
+                            <td class="amount">350,000,000</td>
+                            <td class="address">0x04FE405C700d78Fdf473D3A05A6A0fC17Ed7Bd87</td>
+                            <td><a href="https://bscscan.com/address/0x04FE405C700d78Fdf473D3A05A6A0fC17Ed7Bd87" class="bscscan-link" target="_blank">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="wallet-name">MARKETING Wallet</td>
+                            <td class="percentage">20%</td>
+                            <td class="amount">200,000,000</td>
+                            <td class="address">0xFC6B5A3ef2128247354833046e64E71d44AE9A7F</td>
+                            <td><a href="https://bscscan.com/address/0xFC6B5A3ef2128247354833046e64E71d44AE9A7F" class="bscscan-link" target="_blank">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="wallet-name">LIQUIDITY Wallet</td>
+                            <td class="percentage">20%</td>
+                            <td class="amount">200,000,000</td>
+                            <td class="address">0x75425F5c768099e0e933dce5d8bA7489b9acD72B</td>
+                            <td><a href="https://bscscan.com/address/0x75425F5c768099e0e933dce5d8bA7489b9acD72B" class="bscscan-link" target="_blank">View</a></td>
+                        </tr>
+                        <tr>
+                            <td class="wallet-name">Airdrops</td>
+                            <td class="percentage">5%</td>
+                            <td class="amount">50,000,000</td>
+                            <td class="address">0xa3440a46B787b59EeD47747844d6f27905589af1</td>
+                            <td><a href="https://bscscan.com/address/0xa3440a46B787b59EeD47747844d6f27905589af1" class="bscscan-link" target="_blank">View</a></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>TOTAL</strong></td>
+                            <td><strong>100%</strong></td>
+                            <td><strong>1,000,000,000</strong></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Tokenize DAO. Building RWA Infrastructure.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Diamond sparkle effect
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + 'vw';
+            sparkle.style.top = Math.random() * 100 + 'vh';
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 2000);
+        }
+
+        // Create sparkles periodically
+        setInterval(createSparkle, 800);
+
+        // Gold shimmer effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = scrolled * 0.5;
+            
+            const diamondPattern = document.querySelector('.diamond-pattern');
+            if (diamondPattern) {
+                diamondPattern.style.transform = `translate(${parallax * 0.1}px, ${parallax * 0.1}px) rotate(${scrolled * 0.1}deg)`;
+            }
+        });
+
+        // Resize handler for responsive design
+        window.addEventListener('resize', () => {
+            // Adjust any size-dependent animations here
+        });
+    </script>
+</body>
+</html>
